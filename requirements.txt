@@ -4,3 +4,7 @@ packaging
 fastapi
 uvicorn
 google-generativeai
+googlesearch-python
+pycountry
+youtube_transcript_api
+jina
