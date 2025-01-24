@@ -10,6 +10,9 @@ from phi.tools.calculator import Calculator
 from phi.tools.googlesearch import GoogleSearch
 from phi.tools.hackernews import HackerNews
 from phi.tools.newspaper4k import Newspaper4k
+from phi.tools.phi import PhiTools
+from phi.tools.python import PythonTools
+from phi.tools.wikipedia import WikipediaTools
 from phi.tools.youtube_tools import YouTubeTools
 
 load_dotenv()
@@ -605,3 +608,237 @@ def get_news_reader_agent(gemini_model='gemini-2.0-flash-exp',
     )
 
 
+def get_phi_data_tools_agent(gemini_model='gemini-2.0-flash-exp',
+                             show_tool_calls=False, debug_mode=False, markdown=True):
+    """
+        Creates and returns a Phi Data Tools agent for managing phidata workspaces.
+
+        This agent provides functionality to create, validate, and start workspaces in a phidata environment. It allows users to create new applications from templates (e.g., llm-app, api-app, django-app, streamlit-app),
+        and validates if Phi is ready to run commands. Additionally, it can start existing workspaces for users.
+
+        Parameters
+        ----------
+        gemini_model : str, optional
+            The identifier for the Gemini model to be used by the agent (default: 'gemini-2.0-flash-exp').
+        show_tool_calls : bool, optional
+            If True, displays the intermediate tool calls made by the agent during its execution (default: False).
+        debug_mode : bool, optional
+            If True, enables debugging mode to provide detailed logs for troubleshooting (default: False).
+        markdown : bool, optional
+            If True, the results will be presented using markdown formatting for improved readability (default: True).
+
+        Returns
+        -------
+        Agent
+            An instance of the Agent class configured for creating, managing, and starting Phi workspaces.
+
+        Description
+        -----------
+        - The agent allows the creation of new phidata workspaces from templates such as llm-app, api-app, django-app, and streamlit-app.
+        - The agent validates whether the Phi environment is ready to execute commands.
+        - The agent can start user-specific workspaces by invoking the corresponding start function.
+        - Operations related to workspace management are performed in a seamless and efficient manner.
+
+        Instructions
+        -------------
+        1. Validate that the Phi environment is ready and able to run commands by using the 'validate_phi_is_ready' function.
+        2. Create new phidata workspaces for various application templates (e.g., llm-app, api-app, django-app, streamlit-app) using 'create_new_app'.
+        3. Start a workspace for a user by calling 'start_user_workspace' with the appropriate workspace name.
+        4. Ensure that all workspace operations (creation, validation, starting) are completed successfully before proceeding with further tasks.
+        5. Provide informative and concise responses to the user, including the status of workspace creation and operations.
+        6. Use markdown formatting to enhance readability and structure of responses.
+
+        Example Usage
+        --------------
+        agent = get_phi_data_tools_agent(show_tool_calls=True, debug_mode=True)
+        agent.print_response("Create a new agent-app called agent-app-turing", markdown=True)
+
+        Example Response
+        -----------------
+        "Successfully created a new agent-app called agent-app-turing."
+
+        Notes
+        ------
+        - Ensure that Phi is properly configured before using this agent.
+        - Each workspace created or started should be validated before proceeding with further tasks.
+    """
+    return Agent(
+        description=(
+            "You are a workspace management agent designed to create, manage, and start phidata workspaces. "
+            "Using the Phi toolkit, you can create new applications from templates (like llm-app, api-app, django-app, and streamlit-app), "
+            "validate that the Phi environment is ready, and start existing workspaces for users. "
+            "This agent streamlines the process of working with phidata workspaces, making it easier to manage your applications."
+        ),
+        model=Gemini(id=gemini_model),
+        tools=[PhiTools()],
+        instructions=[
+            "1. Validate that the Phi environment is ready and able to run commands by using the 'validate_phi_is_ready' function.",
+            "2. Create new phidata workspaces for various application templates (e.g., llm-app, api-app, django-app, streamlit-app) using 'create_new_app'.",
+            "3. Start a workspace for a user by calling 'start_user_workspace' with the appropriate workspace name.",
+            "4. Ensure that all workspace operations (creation, validation, starting) are completed successfully before proceeding with further tasks.",
+            "5. Provide informative and concise responses to the user, including the status of workspace creation and operations.",
+            "6. Use markdown formatting to enhance readability and structure of responses."
+        ],
+        show_tool_calls=show_tool_calls,
+        debug_mode=debug_mode,
+        markdown=markdown
+    )
+
+
+def get_python_agent(gemini_model='gemini-2.0-flash-exp',
+                     show_tool_calls=False, debug_mode=False, markdown=True):
+    """
+        Creates and returns a Python agent that can write, save, run, and manage Python code.
+
+        This agent provides functionality to generate Python scripts based on user input, save them to files, run them,
+        and return the results. It also supports managing Python packages by installing them via pip,
+        and executing scripts or Python code in a safe environment.
+
+        Parameters
+        ----------
+        gemini_model : str, optional
+            The identifier for the Gemini model to be used by the agent (default: 'gemini-2.0-flash-exp').
+        show_tool_calls : bool, optional
+            If True, displays the intermediate tool calls made by the agent during its execution (default: False).
+        debug_mode : bool, optional
+            If True, enables debugging mode to provide detailed logs for troubleshooting (default: False).
+        markdown : bool, optional
+            If True, the results will be presented using markdown formatting for improved readability (default: True).
+
+        Returns
+        -------
+        Agent
+            An instance of the Agent class configured for writing, saving, and running Python code.
+
+        Description
+        -----------
+        - The agent can create Python code and save it to a file for execution.
+        - It can run Python code in the current environment and return the results or error messages.
+        - Supports the installation of required Python packages using pip before running the code.
+        - It can list, read, and run files in the base directory, with options to handle safe globals and locals.
+        - The agent is capable of executing Python scripts after saving them to a file and returning the result.
+
+        Instructions
+        -------------
+        1. Write Python code based on the user's request.
+        2. Save the Python code to a file and execute it if 'save_and_run' is enabled.
+        3. If requested, list all files in the base directory or run specific Python files.
+        4. Ensure that all code is executed in a secure environment by using 'safe_globals' and 'safe_locals' to limit available variables.
+        5. Allow users to install packages using pip before running code if 'pip_install' is enabled.
+        6. Ensure that the code output is returned to the user in a readable format, either as the variable's value or a success message.
+        7. Notify the user if there are any errors during the script execution, including details about what went wrong.
+        8. Use markdown formatting for clear presentation of code, results, and errors.
+
+        Example Usage
+        --------------
+        agent = get_python_agent(show_tool_calls=True, debug_mode=True)
+        agent.print_response("Write a python script for fibonacci series and display the result till the 10th number")
+
+        Example Response
+        -----------------
+        "Successfully saved and executed the Python script. The Fibonacci series up to the 10th number is: [0, 1, 1, 2, 3, 5, 8, 13, 21, 34]"
+
+        Notes
+        ------
+        - Ensure that the Python environment is configured with necessary dependencies for successful execution.
+        - Use 'pip_install' to install any required packages before executing the code.
+    """
+    return Agent(
+        description=(
+            "You are a Python scripting agent designed to write, run, and manage Python code. "
+            "Using the PythonTools library, you can create Python scripts, save them to files, run them, and return the results. "
+            "The agent can also handle Python package installations and perform file management operations, allowing for seamless execution of Python scripts in various environments."
+        ),
+        model=Gemini(id=gemini_model),
+        tools=[PythonTools()],
+        instructions=[
+            "1. Write Python code as requested by the user.",
+            "2. Save the Python code to a file and execute it if 'save_and_run' is enabled.",
+            "3. If requested, list all files in the base directory or run specific Python files.",
+            "4. Ensure that all code is executed in a secure environment by using 'safe_globals' and 'safe_locals' to limit available variables.",
+            "5. Allow users to install packages using pip before running code if 'pip_install' is enabled.",
+            "6. Ensure that the code output is returned to the user in a readable format, either as the variable's value or a success message.",
+            "7. Use markdown formatting for clear presentation of code, results, and errors.",
+            "8. Notify the user if there are any errors during the script execution, including details about what went wrong."
+        ],
+        show_tool_calls=show_tool_calls,
+        debug_mode=debug_mode,
+        markdown=markdown
+    )
+
+
+def get_wikipedia_agent(gemini_model='gemini-2.0-flash-exp',
+                        show_tool_calls=False, debug_mode=False, markdown=True):
+    """
+        Creates and returns an agent capable of searching Wikipedia and adding the retrieved information to the knowledge base.
+
+        This agent uses the WikipediaTools library to search for topics on Wikipedia, retrieve relevant article content,
+        and add the retrieved data to the agent's knowledge base for further use. The agent can search and update the knowledge base
+        with the most recent information available from Wikipedia.
+
+        Parameters
+        ----------
+        gemini_model : str, optional
+            The identifier for the Gemini model to be used by the agent (default: 'gemini-2.0-flash-exp').
+        show_tool_calls : bool, optional
+            If True, displays the intermediate tool calls made by the agent during its execution (default: False).
+        debug_mode : bool, optional
+            If True, enables debugging mode to provide detailed logs for troubleshooting (default: False).
+        markdown : bool, optional
+            If True, the results will be presented using markdown formatting for improved readability (default: True).
+
+        Returns
+        -------
+        Agent
+            An instance of the Agent class configured for searching Wikipedia and updating its knowledge base.
+
+        Description
+        -----------
+        - The agent can search Wikipedia for a given topic or query.
+        - It retrieves the content of the relevant Wikipedia article and adds it to the agent's knowledge base.
+        - The agent can then use this content for further processing, summarization, or presenting the information to the user.
+        - The knowledge base is continuously updated with the most recent and relevant Wikipedia information.
+
+        Instructions
+        -------------
+        1. Search Wikipedia for the user's query and retrieve the relevant article content.
+        2. Update the knowledge base with the retrieved Wikipedia article data.
+        3. If necessary, summarize the Wikipedia article and return the summarized content to the user.
+        4. Ensure the results are presented in markdown format for clarity and readability.
+        5. Notify the user if the query does not return relevant Wikipedia results or if an error occurs during the search.
+
+        Example Usage
+        --------------
+        agent = get_wikipedia_agent(show_tool_calls=True, debug_mode=True)
+        agent.print_response("Search Wikipedia for 'Artificial Intelligence'")
+
+        Example Response
+        -----------------
+        "Search results for 'Artificial Intelligence' from Wikipedia: [Article Summary with Key Information]"
+
+        Notes
+        ------
+        - Ensure that the Wikipedia library is properly installed (pip install -U wikipedia) for the agent to function correctly.
+        - The knowledge base is automatically updated with the most recent content retrieved from Wikipedia.
+    """
+    return Agent(
+        description=(
+            "You are a Wikipedia search agent designed to retrieve information from Wikipedia and add the contents to the knowledge base. "
+            "Using the WikipediaTools library, you can search for topics on Wikipedia and gather relevant information to enhance the agent's knowledge base. "
+            "This agent is helpful in retrieving reliable data from Wikipedia articles and using it for further processing or summarization."
+        ),
+        model=Gemini(id=gemini_model),
+        tools=[WikipediaTools()],
+        instructions=[
+            "1. Search Wikipedia for a specified topic or query provided by the user.",
+            "2. Retrieve the relevant article content from Wikipedia based on the search query.",
+            "3. Add the retrieved content to the knowledge base to enhance the agent's understanding.",
+            "4. Present the relevant article content or summary to the user in a clear and concise manner.",
+            "5. Use markdown formatting for better presentation and readability of the results.",
+            "6. Notify the user if the search did not return relevant results or if there were any errors during the search.",
+            "7. Ensure that the retrieved Wikipedia content is up-to-date and accurate, based on the most recent version of the article."
+        ],
+        show_tool_calls=show_tool_calls,
+        debug_mode=debug_mode,
+        markdown=markdown
+    )
