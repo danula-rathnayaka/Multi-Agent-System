@@ -13,6 +13,7 @@ from phi.tools.newspaper4k import Newspaper4k
 from phi.tools.phi import PhiTools
 from phi.tools.python import PythonTools
 from phi.tools.wikipedia import WikipediaTools
+from phi.tools.yfinance import YFinanceTools
 from phi.tools.youtube_tools import YouTubeTools
 
 load_dotenv()
@@ -838,6 +839,97 @@ def get_wikipedia_agent(gemini_model='gemini-2.0-flash-exp',
             "6. Notify the user if the search did not return relevant results or if there were any errors during the search.",
             "7. Ensure that the retrieved Wikipedia content is up-to-date and accurate, based on the most recent version of the article."
         ],
+        show_tool_calls=show_tool_calls,
+        debug_mode=debug_mode,
+        markdown=markdown
+    )
+
+
+def get_finance_agent(gemini_model='gemini-2.0-flash-exp',
+                      show_tool_calls=False, debug_mode=False, markdown=True):
+    """
+        Creates and returns an investment analyst agent that can access and retrieve a wide range of stock data and financial information
+        from Yahoo Finance using the YFinanceTools library.
+
+        This agent can retrieve stock prices, company information, income statements, analyst recommendations, financial ratios, and more.
+        It is designed to assist in investment analysis by providing up-to-date and reliable data about companies and their financial performance.
+
+        Parameters
+        ----------
+        gemini_model : str, optional
+            The identifier for the Gemini model to be used by the agent (default: 'gemini-2.0-flash-exp').
+        show_tool_calls : bool, optional
+            If True, displays the intermediate tool calls made by the agent during its execution (default: False).
+        debug_mode : bool, optional
+            If True, enables debugging mode to provide detailed logs for troubleshooting (default: False).
+        markdown : bool, optional
+            If True, the results will be presented using markdown formatting for improved readability (default: True).
+
+        Returns
+        -------
+        Agent
+            An instance of the Agent class configured for stock market research and financial data retrieval.
+
+        Description
+        -----------
+        - The agent can retrieve current stock prices, historical stock prices, and detailed financial statements.
+        - It can also access key financial ratios, income statements, and analyst recommendations to aid in investment analysis.
+        - The agent can pull the latest company news, technical indicators, and other financial data points from Yahoo Finance.
+        - The agent's responses are formatted using markdown, making it easy to present complex financial data in a user-friendly manner.
+
+        Instructions
+        -------------
+        1. Retrieve and display the current stock price of a company when requested by the user.
+        2. Gather and present detailed company information, including financial fundamentals, analyst recommendations, and news.
+        3. For historical stock prices, provide the relevant data and display it in an easily digestible format (e.g., tables or summaries).
+        4. When requested, display key financial ratios and income statements to aid in analyzing the company's financial health.
+        5. Format the response in markdown, using tables or bullet points to improve the readability of the data.
+        6. Notify the user if any data cannot be retrieved or if there is an error in fetching the stock information.
+
+        Example Usage
+        --------------
+        agent = get_finance_agent(show_tool_calls=True, debug_mode=True)
+        agent.print_response("What is the stock price for NVDA and the latest analyst recommendations?")
+
+        Example Response
+        -----------------
+        "The current stock price of NVDA is $XYZ. The latest analyst recommendations are as follows: [Table of Analyst Ratings]"
+
+        Notes
+        ------
+        - Ensure that the `yfinance` library is installed and up-to-date (pip install -U yfinance) for proper functionality.
+        - The agent can retrieve a wide range of financial data, including but not limited to stock prices, technical indicators, and company news.
+    """
+    return Agent(
+        description=(
+            "You are an investment analyst designed to assist with stock market research. "
+            "Your role is to retrieve detailed financial data and insights from Yahoo Finance. "
+            "You can access up-to-date stock prices, key financial ratios, income statements, "
+            "analyst recommendations, company information, and much more to assist in making informed investment decisions."
+        ),
+        model=Gemini(id=gemini_model),
+        tools=[
+            YFinanceTools(
+                stock_price=True,
+                company_info=True,
+                income_statements=True,
+                key_financial_ratios=True,
+                company_news=True,
+                technical_indicators=True,
+                historical_prices=True,
+                analyst_recommendations=True,
+                stock_fundamentals=True
+            )
+        ],
+        instructions=[
+            "1. Retrieve real-time stock prices, company information, and historical price data as requested by the user.",
+            "2. Provide detailed stock fundamentals such as earnings, P/E ratios, and other relevant financial metrics.",
+            "3. Include analyst recommendations and financial news updates that might impact stock performance.",
+            "4. Display data in markdown format with tables where applicable for better clarity and presentation.",
+            "5. Ensure that all financial data is sourced from reliable sources and is up-to-date with Yahoo Finance.",
+            "6. Notify the user if any requested data is unavailable or if there are any errors in retrieving the information."
+        ]
+        ,
         show_tool_calls=show_tool_calls,
         debug_mode=debug_mode,
         markdown=markdown

@@ -14,3 +14,4 @@ pypdf
 newspaper4k
 lxml_html_clean
 wikipedia
+yfinance
