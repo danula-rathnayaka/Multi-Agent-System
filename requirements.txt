@@ -9,3 +9,7 @@ pycountry
 youtube_transcript_api
 jina
 crawl4ai
+arxiv
+pypdf
+newspaper4k
+lxml_html_clean

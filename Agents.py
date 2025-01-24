@@ -5,7 +5,11 @@ from dotenv import load_dotenv
 import os
 
 from phi.tools.airflow import AirflowToolkit
+from phi.tools.arxiv_toolkit import ArxivToolkit
+from phi.tools.calculator import Calculator
 from phi.tools.googlesearch import GoogleSearch
+from phi.tools.hackernews import HackerNews
+from phi.tools.newspaper4k import Newspaper4k
 from phi.tools.youtube_tools import YouTubeTools
 
 load_dotenv()
@@ -262,3 +266,342 @@ def get_file_read_write_agent(save_dag=True, read_dag=True, dir_name="files", ge
                  show_tool_calls=show_tool_calls,
                  markdown=debug_mode
                  )
+
+
+def get_research_search_tool(gemini_model='gemini-2.0-flash-exp',
+                             show_tool_calls=False, debug_mode=False):
+    """
+        Creates and returns a research search agent to find academic publications on a specified topic.
+
+        This agent is designed to perform targeted searches across a comprehensive academic database,
+        returning relevant research papers and scholarly articles based on a user’s query. The agent allows
+        searching for academic work, reading paper summaries, and downloading publications if required.
+
+        Parameters
+        ----------
+        gemini_model : str, optional
+            The identifier for the Gemini model to be used by the agent (default: 'gemini-2.0-flash-exp').
+        show_tool_calls : bool, optional
+            If True, displays the intermediate tool calls made by the agent during its execution (default: False).
+        debug_mode : bool, optional
+            If True, enables debugging mode to provide detailed logs for troubleshooting (default: False).
+
+        Returns
+        -------
+        Agent
+            An instance of the Agent class configured to search for academic papers and publications.
+
+        Description
+        -----------
+        - This agent allows the user to search for scholarly articles and papers related to a specific research topic.
+        - It can search an academic database, retrieve relevant results, and offer information on the articles found.
+        - Supports downloading and reading full-text papers, subject to availability.
+        - Results are presented with summaries, publication details, and options to read or download the papers.
+
+        Instructions
+        -------------
+        1. Perform a search based on the user's query for relevant academic publications.
+        2. Retrieve the top articles and present the findings in a list format, including the paper title, authors, and summary.
+        3. Provide the publication’s metadata and relevant links when available.
+        4. If the user requests, provide access to the full text or a downloadable version of the paper, if possible.
+        5. Ensure all responses are clear, concise, and presented in markdown for readability.
+        6. When searching, prioritize scholarly and credible sources.
+
+        Example Usage
+        --------------
+        agent = get_research_search_tool(show_tool_calls=True, debug_mode=True)
+        agent.print_response("Search for recent research on 'language models'", markdown=True)
+
+        Example Response
+        -----------------
+        1. **Title:** Advances in Language Models for Natural Language Processing
+           **Authors:** John Doe, Jane Smith
+           **Summary:** This paper discusses the recent advancements in language models for NLP tasks, focusing on transformer-based architectures.
+           **Link:** [Read Paper](link_to_paper)
+        2. **Title:** Language Models: A Comprehensive Review
+           **Authors:** Mark Lee, Sarah Wang
+           **Summary:** A review of current language models, their applications in various domains, and the challenges they face.
+           **Link:** [Read Paper](link_to_paper)
+        3. **Title:** Scaling Language Models for Large-Scale NLP Applications
+           **Authors:** Emily Brown, Michael Davis
+           **Summary:** Exploring the scalability of language models and their use in real-world NLP applications.
+           **Link:** [Read Paper](link_to_paper)
+
+        Notes
+        ------
+        - Ensure that the agent has internet access to perform searches.
+        - The agent can be used in conjunction with other tools for comprehensive research workflows.
+        - The availability of full-text papers may vary based on the publication’s access permissions.
+    """
+    return Agent(
+        model=Gemini(id=gemini_model),
+        description=(
+            "You are a research search agent designed to retrieve academic publications based on user queries. "
+            "You can search for scholarly articles, summarize key findings, and provide access to papers and metadata. "
+            "The agent helps users explore the latest research in various fields, making academic search easy and efficient. "
+            "You provide detailed information about the papers, including titles, authors, summaries, and links to the full text or downloads when available."
+        ),
+        tools=[ArxivToolkit()],
+        instructions=[
+            "1. Perform a search based on the user's query for relevant academic publications.",
+            "2. Retrieve the top articles and present the findings in a list format, including the paper title, authors, and summary.",
+            "3. Provide the publication’s metadata and relevant links when available.",
+            "4. If the user requests, provide access to the full text or a downloadable version of the paper, if possible.",
+            "5. Ensure all responses are clear, concise, and presented in markdown for readability.",
+            "6. When searching, prioritize scholarly and credible sources."
+        ],
+        show_tool_calls=show_tool_calls,
+        debug_mode=debug_mode
+    )
+
+
+def get_calculator_agent(gemini_model='gemini-2.0-flash-exp',
+                         show_tool_calls=False, debug_mode=False, markdown=True):
+    """
+        Creates and returns a mathematical computation agent capable of performing various operations.
+
+        This agent is designed to handle both basic and advanced mathematical tasks, making it a powerful tool for solving arithmetic and algebraic problems.
+        The agent supports addition, subtraction, multiplication, division, exponentiation, factorial calculation, prime number checking, and square root computation.
+
+        Parameters
+        ----------
+        gemini_model : str, optional
+            The identifier for the Gemini model to be used by the agent (default: 'gemini-2.0-flash-exp').
+        show_tool_calls : bool, optional
+            If True, displays the intermediate tool calls made by the agent during its execution (default: False).
+        debug_mode : bool, optional
+            If True, enables debugging mode to provide detailed logs for troubleshooting (default: False).
+        markdown : bool, optional
+            If True, the results will be presented using markdown formatting for improved readability (default: False).
+
+        Returns
+        -------
+        Agent
+            An instance of the Agent class configured to perform mathematical operations.
+
+        Description
+        -----------
+        - The agent can perform a wide range of mathematical operations, including basic arithmetic (addition, subtraction, multiplication, division),
+          as well as advanced functions like exponentiation, factorials, prime number checking, and square roots.
+        - Results are presented clearly and concisely in markdown format for easy understanding.
+
+        Instructions
+        -------------
+        1. Perform basic arithmetic operations such as addition, subtraction, multiplication, and division.
+        2. Compute exponentiation (raising numbers to a power).
+        3. Calculate the factorial of a number.
+        4. Check if a number is prime.
+        5. Compute the square root of a given number.
+        6. Ensure all results are returned clearly and concisely.
+        7. Use markdown formatting for presenting the answers in a clean and readable manner.
+        8. If an operation is not supported or invalid, provide an appropriate error message.
+
+        Example Usage
+        --------------
+        agent = get_calculator_agent(show_tool_calls=True, debug_mode=True)
+        agent.print_response("What is 5 + 3?", markdown=True)
+        agent.print_response("Calculate the square root of 16.", markdown=True)
+
+        Example Response
+        -----------------
+        1. 5 + 3 = 8
+        2. The square root of 16 is 4.
+
+        Notes
+        ------
+        - The agent handles a wide range of mathematical tasks and is ideal for use in educational, scientific, or engineering applications.
+        - Ensure that input values are valid numbers for the operations to work correctly.
+    """
+    return Agent(
+        model=Gemini(id=gemini_model),
+        description=(
+            "You are a mathematical computation agent capable of performing a wide range of arithmetic and algebraic operations. "
+            "You can perform basic arithmetic operations such as addition, subtraction, multiplication, and division. "
+            "Additionally, you support advanced operations including exponentiation, factorial calculation, prime number checking, and square root computation. "
+            "This makes you a versatile tool for solving both simple and complex mathematical problems."
+        ),
+        tools=[
+            Calculator(
+                add=True,
+                subtract=True,
+                multiply=True,
+                divide=True,
+                exponentiate=True,
+                factorial=True,
+                is_prime=True,
+                square_root=True,
+            )
+        ],
+        instructions=[
+            "1. Perform basic arithmetic operations such as addition, subtraction, multiplication, and division.",
+            "2. Compute exponentiation (raising numbers to a power).",
+            "3. Calculate the factorial of a number.",
+            "4. Check if a number is prime.",
+            "5. Compute the square root of a given number.",
+            "6. Ensure all results are returned clearly and concisely.",
+            "7. Use markdown formatting for presenting the answers in a clean and readable manner.",
+            "8. If an operation is not supported or invalid, provide an appropriate error message."
+        ],
+        show_tool_calls=show_tool_calls,
+        debug_mode=debug_mode,
+        markdown=markdown,
+    )
+
+
+def get_hacker_news_agent(gemini_model='gemini-2.0-flash-exp',
+                          show_tool_calls=False, debug_mode=False, markdown=True):
+    """
+        Creates and returns a Hacker News agent designed to fetch and present top stories and user details from the Hacker News platform.
+
+        This agent allows you to search for the latest popular stories on Hacker News, along with summaries and related user information.
+        It provides a convenient way to stay updated with the most relevant content and engage with the stories posted by users.
+
+        Parameters
+        ----------
+        gemini_model : str, optional
+            The identifier for the Gemini model to be used by the agent (default: 'gemini-2.0-flash-exp').
+        show_tool_calls : bool, optional
+            If True, displays the intermediate tool calls made by the agent during its execution (default: False).
+        debug_mode : bool, optional
+            If True, enables debugging mode to provide detailed logs for troubleshooting (default: False).
+        markdown : bool, optional
+            If True, the results will be presented using markdown formatting for improved readability (default: True).
+
+        Returns
+        -------
+        Agent
+            An instance of the Agent class configured to retrieve top stories and user details from Hacker News.
+
+        Description
+        -----------
+        - The agent retrieves the top stories from Hacker News and provides engaging summaries of the content.
+        - If requested, it can also provide detailed user information for the users who submitted the stories.
+        - The results are returned in a clear and concise markdown format for easy reading.
+
+        Instructions
+        -------------
+        1. Retrieve the top stories from Hacker News based on the latest posts.
+        2. Present the top stories along with a brief summary and key details about the content.
+        3. If requested, fetch user details of those who submitted the stories, including their username and activity on the platform.
+        4. Use markdown formatting for presenting the stories and user information in a clear and readable manner.
+        5. Ensure the responses are concise, engaging, and focused on the most relevant information.
+        6. If no user details are available or requested, provide only the top stories with summaries.
+
+        Example Usage
+        --------------
+        agent = get_hacker_news_agent(show_tool_calls=True, debug_mode=True)
+        agent.print_response("Write an engaging summary of the users with the top 2 stories on hackernews. Please mention the stories as well.", markdown=True)
+
+        Example Response
+        -----------------
+        1. "Story 1 Title" - Summary: A brief description of the first story's content. (Posted by: user123)
+        2. "Story 2 Title" - Summary: A brief description of the second story's content. (Posted by: user456)
+
+        Notes
+        ------
+        - The agent fetches only the top stories from Hacker News based on the latest activity.
+        - Ensure that the agent has internet access to fetch the data in real-time.
+    """
+    return Agent(
+        model=Gemini(id=gemini_model),
+        description=(
+            "You are a Hacker News agent designed to retrieve top stories and provide insights into users on the Hacker News platform. "
+            "You can fetch the latest stories, summarize them, and provide additional details about users who posted the stories. "
+            "The agent is equipped to present the top stories along with summaries and relevant user information, offering a comprehensive view of the most popular content."
+        ),
+        tools=[HackerNews()],
+        instructions=[
+            "1. Retrieve the top stories from Hacker News based on the latest posts.",
+            "2. Present the top stories along with a brief summary and key details about the content.",
+            "3. If requested, fetch user details of those who submitted the stories, including their username and activity on the platform.",
+            "4. Use markdown formatting for presenting the stories and user information in a clear and readable manner.",
+            "5. Ensure the responses are concise, engaging, and focused on the most relevant information.",
+            "6. If no user details are available or requested, provide only the top stories with summaries."
+        ],
+        show_tool_calls=show_tool_calls,
+        debug_mode=debug_mode,
+        markdown=markdown,
+    )
+
+
+def get_news_reader_agent(gemini_model='gemini-2.0-flash-exp',
+                          show_tool_calls=False, debug_mode=False, markdown=True):
+    """
+        Creates and returns a News Reader agent designed to retrieve and summarize articles from online sources.
+
+        This agent retrieves articles from the provided URLs and generates summaries using the Newspaper4k library.
+        The agent can return both the full article content and concise summaries based on the user's request.
+        The summaries focus on key points while ensuring the original meaning is preserved.
+
+        Parameters
+        ----------
+        gemini_model : str, optional
+            The identifier for the Gemini model to be used by the agent (default: 'gemini-2.0-flash-exp').
+        show_tool_calls : bool, optional
+            If True, displays the intermediate tool calls made by the agent during its execution (default: False).
+        debug_mode : bool, optional
+            If True, enables debugging mode to provide detailed logs for troubleshooting (default: False).
+        markdown : bool, optional
+            If True, the results will be presented using markdown formatting for improved readability (default: True).
+
+        Returns
+        -------
+        Agent
+            An instance of the Agent class configured to retrieve and summarize news articles from online sources.
+
+        Description
+        -----------
+        - The agent retrieves the full text of an article from the provided URL.
+        - The agent can generate a concise summary of the article's main points.
+        - The summary and/or full content is presented in markdown format for readability.
+        - If an error occurs during article retrieval, the agent provides a failure message and suggests potential fixes.
+
+        Instructions
+        -------------
+        1. Retrieve the full text of an article from the provided URL.
+        2. If the article is successfully retrieved, generate a summary of its content in a concise and accurate manner.
+        3. Ensure that the summary captures the essential points and message of the article.
+        4. Provide the option to return the full article text or just the summary, depending on user preference.
+        5. Use markdown formatting for presenting the summary or full content to ensure clarity and readability.
+        6. In case of errors (e.g., invalid URL or failure to retrieve the article), notify the user and explain the issue.
+        7. Ensure that the summaries are based solely on the article's content, without adding personal opinions.
+
+        Example Usage
+        --------------
+        agent = get_news_reader_agent(show_tool_calls=True, debug_mode=True)
+        agent.print_response("Please summarize https://www.rockymountaineer.com/blog/experience-icefields-parkway-scenic-drive-lifetime")
+
+        Example Response
+        -----------------
+        "The Icefields Parkway is one of the most scenic drives in the world, offering breathtaking views of glaciers, mountains, and pristine lakes. The experience is truly unforgettable, providing opportunities for sightseeing and wildlife observation."
+
+        Notes
+        ------
+        - Ensure the provided URL is a valid article link.
+        - The agent can process multiple articles but one URL should be processed at a time.
+    """
+
+    return Agent(
+        description=(
+            "You are a news reader agent designed to retrieve and summarize articles from various online news sources. "
+            "The agent uses the Newspaper4k library to extract relevant content and generate concise summaries. "
+            "You can provide a URL, and the agent will retrieve and summarize the article text, focusing on key points, and present them in a readable format. "
+            "Additionally, the agent can return the full content of the article upon request."
+        ),
+        model=Gemini(id=gemini_model),
+        tools=[Newspaper4k(include_summary=True)],
+        instructions=[
+            "1. Retrieve the full text of an article from the provided URL.",
+            "2. If the article is successfully retrieved, generate a summary of its content in a concise and accurate manner.",
+            "3. Ensure that the summary captures the essential points and message of the article.",
+            "4. Provide the option to return the full article text or just the summary, depending on user preference.",
+            "5. Use markdown formatting for presenting the summary or full content to ensure clarity and readability.",
+            "6. In case of errors (e.g., invalid URL or failure to retrieve the article), notify the user and explain the issue.",
+            "7. Ensure that the summaries are based solely on the article's content, without adding personal opinions."
+        ],
+        show_tool_calls=show_tool_calls,
+        debug_mode=debug_mode,
+        markdown=markdown,
+    )
+
+
